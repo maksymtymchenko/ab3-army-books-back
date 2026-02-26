@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { BookController } from '../controllers/book.controller';
 import { validate } from '../middlewares/validation';
 import {
+  createBookBodySchema,
   getBookByIdParamsSchema,
   getCatalogBooksQuerySchema,
   getFiltersQuerySchema,
@@ -35,10 +36,18 @@ router.get(
   BookController.search
 );
 
+router.post('/', validate(createBookBodySchema, 'body'), BookController.create);
+
 router.get(
   '/:id',
   validate(getBookByIdParamsSchema, 'params'),
   BookController.getById
+);
+
+router.delete(
+  '/:id',
+  validate(getBookByIdParamsSchema, 'params'),
+  BookController.delete
 );
 
 export const bookRoutes = router;

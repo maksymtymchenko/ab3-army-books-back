@@ -139,4 +139,35 @@ export class BookService {
       totalItems
     };
   }
+
+  /**
+   * Create a new book.
+   */
+  async createBook(input: {
+    title: string;
+    author: string;
+    coverUrl: string;
+    status: string;
+    description?: string;
+    difficulty?: string;
+    popularityScore?: number;
+    sectionTags?: string[];
+  }) {
+    const created = await this.bookRepo.create(input as any);
+    const mapped = mapBook(created);
+    return mapped!;
+  }
+
+  /**
+   * Delete a book by id.
+   */
+  async deleteBook(id: string) {
+    const deleted = await this.bookRepo.deleteById(id);
+    if (!deleted) {
+      throw new NotFoundError(
+        ERROR_CODES.BOOK_NOT_FOUND,
+        'Book with given id not found'
+      );
+    }
+  }
 }

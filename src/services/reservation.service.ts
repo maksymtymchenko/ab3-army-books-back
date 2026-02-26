@@ -75,4 +75,63 @@ export class ReservationService {
 
     return mapReservation(reservation, updatedBook);
   }
+
+  /**
+   * List reservations with optional status filter and pagination.
+   */
+  async listReservations(
+    page: number,
+    pageSize: number,
+    status?: string
+  ): Promise<{
+    items: ReturnType<typeof mapReservation>[];
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  }> {
+    const { items, total } = await this.reservationRepo.findMany(
+      page,
+      pageSize,
+      status
+    );
+
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    return {
+      items: items.map((r) => mapReservation(r)),
+      page,
+      pageSize,
+      totalItems: total,
+      totalPages
+    };
+  }
+
+  /**
+   * Get reservation by id.
+   */
+  async getById(id: string) {
+    const reservation = await this.reservationRepo.findById(id);
+    if (!reservation) {
+      throw new NotFoundError(
+        ERROR_CODES.BOOK_NOT_FOUND,
+        'Reservation with given id not found'
+      );
+    }
+    return mapReservation(reservation);
+  }
+
+  /**
+   * Update reservation status.
+   */
+  async updateStatus(id: string, status: string) {
+    const updated = await this.reservationRepo.updateStatus(id, status);
+    if (!updated) {
+      throw new NotFoundError(
+        ERROR_CODES.BOOK_NOT_FOUND,
+        'Reservation with given id not found'
+      );
+    }
+    return mapReservation(updated);
+  }
 }

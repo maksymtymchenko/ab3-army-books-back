@@ -33,4 +33,54 @@ export class ReservationController {
       next(err);
     }
   }
+
+  static async list(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { page, pageSize, status } = req.query as any;
+      const pageNum = Number(page) || 1;
+      const pageSizeNum = Number(pageSize) || 20;
+
+      const data = await reservationService.listReservations(
+        pageNum,
+        pageSizeNum,
+        status
+      );
+      res.status(200).json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async getById(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const data = await reservationService.getById(id);
+      res.status(200).json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async updateStatus(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { status } = req.body as { status: string };
+      const data = await reservationService.updateStatus(id, status);
+      res.status(200).json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
 }

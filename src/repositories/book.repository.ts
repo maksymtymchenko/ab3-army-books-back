@@ -159,4 +159,19 @@ export class BookRepository {
       { new: true }
     ).exec();
   }
+
+  /**
+   * Create a new book.
+   */
+  async create(data: Partial<IBook>): Promise<IBook> {
+    const book = new BookModel(data);
+    return book.save();
+  }
+
+  /**
+   * Delete a book by id.
+   */
+  async deleteById(id: string): Promise<IBook | null> {
+    return BookModel.findByIdAndDelete(id).exec();
+  }
 }

@@ -118,4 +118,31 @@ export class BookController {
       next(err);
     }
   }
+
+  static async create(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const book = await bookService.createBook(req.body);
+      res.status(201).json(book);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async delete(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      await bookService.deleteBook(id);
+      res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
+  }
 }

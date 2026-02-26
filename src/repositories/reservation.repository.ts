@@ -23,4 +23,50 @@ export class ReservationRepository {
     });
     return reservation.save();
   }
+
+  /**
+   * Find reservations with optional status filter and pagination.
+   */
+  async findMany(
+    page: number,
+    pageSize: number,
+    status?: string
+  ): Promise<{ items: IReservation[]; total: number }> {
+    const query: Record<string, unknown> = {};
+    if (status) {
+      query.status = status;
+    }
+
+    const [items, total] = await Promise.all([
+      ReservationModel.find(query)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .exec(),
+      ReservationModel.countDocuments(query).exec()
+    ]);
+
+    return { items, total };
+  }
+
+  /**
+   * Find reservation by id.
+   */
+  async findById(id: string): Promise<IReservation | null> {
+    return ReservationModel.findById(id).exec();
+  }
+
+  /**
+   * Update reservation status.
+   */
+  async updateStatus(
+    id: string,
+    status: string
+  ): Promise<IReservation | null> {
+    return ReservationModel.findByIdAndUpdate(
+      id,
+      { $set: { status } },
+      { new: true }
+    ).exec();
+  }
 }

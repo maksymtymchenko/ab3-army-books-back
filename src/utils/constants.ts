@@ -11,7 +11,8 @@ export const RESERVATION_STATUS = [
   'pending',
   'confirmed',
   'rejected',
-  'cancelled'
+  'cancelled',
+  'returned'
 ] as const;
 export type ReservationStatus = (typeof RESERVATION_STATUS)[number];
 

@@ -161,6 +161,17 @@ export class BookRepository {
   }
 
   /**
+   * Set book status to in_stock (e.g. when reservation is returned/cancelled).
+   */
+  async setStatusInStock(id: string): Promise<IBook | null> {
+    return BookModel.findByIdAndUpdate(
+      id,
+      { $set: { status: 'in_stock' } },
+      { new: true }
+    ).exec();
+  }
+
+  /**
    * Create a new book.
    */
   async create(data: Partial<IBook>): Promise<IBook> {

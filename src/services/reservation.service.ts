@@ -122,7 +122,7 @@ export class ReservationService {
   }
 
   /**
-   * Update reservation status.
+   * Update reservation status. When status is 'returned', also sets book back to in_stock.
    */
   async updateStatus(id: string, status: string) {
     const updated = await this.reservationRepo.updateStatus(id, status);
@@ -132,6 +132,17 @@ export class ReservationService {
         'Reservation with given id not found'
       );
     }
+
+    if (status === 'returned') {
+      const bookId =
+        typeof updated.bookId === 'object' &&
+        updated.bookId !== null &&
+        '_id' in updated.bookId
+          ? String((updated.bookId as { _id: unknown })._id)
+          : String(updated.bookId);
+      await this.bookRepo.setStatusInStock(bookId);
+    }
+
     return mapReservation(updated);
   }
 }

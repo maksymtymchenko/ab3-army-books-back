@@ -87,8 +87,21 @@ export const mapCategory = (
   href: doc.href
 });
 
+/** Populated bookId from Mongoose (when using .populate('bookId')). */
+function getPopulatedBook(
+  doc: Document & IReservation
+): (Document & IBook) | undefined {
+  const ref = (doc as any).bookId;
+  if (ref && typeof ref === 'object' && 'title' in ref) {
+    return ref as Document & IBook;
+  }
+  return undefined;
+}
+
 /**
  * Map reservation document (and optional book) to API reservation shape.
+ * Includes fullName, phone, subdivision, comment for bot display.
+ * Nested book is included when bookId is populated or passed as second arg.
  */
 export const mapReservation = (
   doc: Document & IReservation,
@@ -98,23 +111,34 @@ export const mapReservation = (
   bookId: string;
   status: string;
   createdAt: string;
+  fullName: string;
+  phone: string;
+  subdivision: string;
+  comment?: string | null;
   book?: {
     id: string;
     title: string;
     author: string;
     status: string;
   };
-} => ({
-  id: mapId(doc),
-  bookId: doc.bookId.toString(),
-  status: doc.status,
-  createdAt: doc.createdAt.toISOString(),
-  book: book
-    ? {
-        id: mapId(book),
-        title: book.title,
-        author: book.author,
-        status: book.status
-      }
-    : undefined
-});
+} => {
+  const bookDoc = book ?? getPopulatedBook(doc);
+  return {
+    id: mapId(doc),
+    bookId: (doc.bookId as any)?.toString?.() ?? String(doc.bookId),
+    status: doc.status,
+    createdAt: doc.createdAt.toISOString(),
+    fullName: doc.fullName ?? '',
+    phone: doc.phone ?? '',
+    subdivision: doc.subdivision ?? '',
+    comment: doc.comment ?? null,
+    book: bookDoc
+      ? {
+          id: mapId(bookDoc),
+          title: bookDoc.title,
+          author: bookDoc.author,
+          status: bookDoc.status
+        }
+      : undefined
+  };
+};

@@ -42,6 +42,7 @@ export class ReservationRepository {
         .sort({ createdAt: -1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize)
+        .populate('bookId', 'title author status')
         .exec(),
       ReservationModel.countDocuments(query).exec()
     ]);
@@ -53,20 +54,20 @@ export class ReservationRepository {
    * Find reservation by id.
    */
   async findById(id: string): Promise<IReservation | null> {
-    return ReservationModel.findById(id).exec();
+    return ReservationModel.findById(id)
+      .populate('bookId', 'title author status')
+      .exec();
   }
 
   /**
-   * Update reservation status.
+   * Update reservation status. Returns updated reservation with book populated.
    */
   async updateStatus(
     id: string,
     status: string
   ): Promise<IReservation | null> {
-    return ReservationModel.findByIdAndUpdate(
-      id,
-      { $set: { status } },
-      { new: true }
-    ).exec();
+    return ReservationModel.findByIdAndUpdate(id, { $set: { status } }, { new: true })
+      .populate('bookId', 'title author status')
+      .exec();
   }
 }

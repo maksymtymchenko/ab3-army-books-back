@@ -40,7 +40,11 @@ export class ReservationController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { page, pageSize, status } = req.query as any;
+      const { page, pageSize, status } = req.query as {
+        page?: string;
+        pageSize?: string;
+        status?: string;
+      };
       const pageNum = Number(page) || 1;
       const pageSizeNum = Number(pageSize) || 20;
 
@@ -69,6 +73,10 @@ export class ReservationController {
     }
   }
 
+  /**
+   * PATCH /api/reservations/:id/status — update reservation status
+   * (e.g. pending → confirmed, rejected, cancelled).
+   */
   static async updateStatus(
     req: Request,
     res: Response,

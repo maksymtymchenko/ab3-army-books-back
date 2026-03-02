@@ -7,6 +7,7 @@ import {
   ValidationError
 } from '../utils/ApiError';
 import { mapReservation } from '../utils/mapper';
+import { notifyNewReservation } from '../utils/notifyNewReservation';
 
 export interface CreateReservationInput {
   bookId: string;
@@ -72,8 +73,12 @@ export class ReservationService {
     }
 
     const reservation = await this.reservationRepo.create(input);
+    const payload = mapReservation(reservation, updatedBook);
 
-    return mapReservation(reservation, updatedBook);
+    // Fire-and-forget notification to bot; API response should not depend on it.
+    void notifyNewReservation(payload);
+
+    return payload;
   }
 
   /**

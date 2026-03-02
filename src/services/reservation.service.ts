@@ -127,7 +127,8 @@ export class ReservationService {
   }
 
   /**
-   * Update reservation status. When status is 'returned', also sets book back to in_stock.
+   * Update reservation status.
+   * When status is 'returned', 'rejected' or 'cancelled', also sets book back to in_stock.
    */
   async updateStatus(id: string, status: string) {
     const updated = await this.reservationRepo.updateStatus(id, status);
@@ -138,7 +139,7 @@ export class ReservationService {
       );
     }
 
-    if (status === 'returned') {
+    if (status === 'returned' || status === 'rejected' || status === 'cancelled') {
       const bookId =
         typeof updated.bookId === 'object' &&
         updated.bookId !== null &&

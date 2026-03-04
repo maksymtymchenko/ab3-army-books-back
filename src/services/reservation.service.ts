@@ -128,7 +128,8 @@ export class ReservationService {
 
   /**
    * Update reservation status.
-   * When status is 'returned', 'rejected' or 'cancelled', also sets book back to in_stock.
+   * - When status is 'confirmed', sets book status to 'issued'.
+   * - When status is 'returned', 'rejected' or 'cancelled', sets book back to 'in_stock'.
    */
   async updateStatus(id: string, status: string) {
     const updated = await this.reservationRepo.updateStatus(id, status);
@@ -139,14 +140,25 @@ export class ReservationService {
       );
     }
 
-    if (status === 'returned' || status === 'rejected' || status === 'cancelled') {
+    const shouldSetInStock =
+      status === 'returned' || status === 'rejected' || status === 'cancelled';
+    const shouldSetIssued = status === 'confirmed';
+
+    if (shouldSetInStock || shouldSetIssued) {
       const bookId =
         typeof updated.bookId === 'object' &&
         updated.bookId !== null &&
         '_id' in updated.bookId
           ? String((updated.bookId as { _id: unknown })._id)
           : String(updated.bookId);
-      await this.bookRepo.setStatusInStock(bookId);
+
+      if (shouldSetInStock) {
+        await this.bookRepo.setStatusInStock(bookId);
+      }
+
+      if (shouldSetIssued) {
+        await this.bookRepo.setStatusIssued(bookId);
+      }
     }
 
     return mapReservation(updated);

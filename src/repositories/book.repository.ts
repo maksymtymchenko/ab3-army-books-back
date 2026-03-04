@@ -172,6 +172,17 @@ export class BookRepository {
   }
 
   /**
+   * Set book status to issued (e.g. when reservation is confirmed).
+   */
+  async setStatusIssued(id: string): Promise<IBook | null> {
+    return BookModel.findByIdAndUpdate(
+      id,
+      { $set: { status: 'issued' } },
+      { new: true }
+    ).exec();
+  }
+
+  /**
    * Create a new book.
    */
   async create(data: Partial<IBook>): Promise<IBook> {

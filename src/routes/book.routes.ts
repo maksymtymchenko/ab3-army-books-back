@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { BookController } from '../controllers/book.controller';
 import { validate } from '../middlewares/validation';
+import { upload } from '../middlewares/upload';
+import { upload } from '../middlewares/upload';
 import {
   createBookBodySchema,
   getBookByIdParamsSchema,
@@ -36,7 +38,19 @@ router.get(
   BookController.search
 );
 
+router.post(
+  '/upload-cover',
+  upload.single('file'),
+  BookController.uploadCover
+);
+
 router.post('/', validate(createBookBodySchema, 'body'), BookController.create);
+
+router.post(
+  '/with-cover',
+  upload.single('cover'),
+  BookController.createWithCover
+);
 
 router.get(
   '/:id',

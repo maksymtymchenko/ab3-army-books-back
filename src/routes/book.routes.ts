@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { BookController } from '../controllers/book.controller';
 import { validate } from '../middlewares/validation';
 import { upload } from '../middlewares/upload';
-import { upload } from '../middlewares/upload';
 import {
   createBookBodySchema,
   getBookByIdParamsSchema,

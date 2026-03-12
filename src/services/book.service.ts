@@ -17,6 +17,11 @@ import {
 } from '../utils/ApiError';
 import { statusLabels, difficultyLabels } from '../utils/localization';
 import { BookSectionTag } from '../utils/constants';
+import {
+  clearCache,
+  getFromCache,
+  setInCache
+} from '../utils/cache';
 
 /**
  * Service for book-related business logic.
@@ -47,7 +52,38 @@ export class BookService {
     section?: BookSectionTag
   ) {
     if (page < 1 || pageSize < 1) {
-      throw new InvalidParamsError('Page and pageSize must be positive integers');
+      throw new InvalidParamsError(
+        'Page and pageSize must be positive integers'
+      );
+    }
+
+    const cacheKey = JSON.stringify({
+      type: 'catalog',
+      page,
+      pageSize,
+      filters,
+      sort,
+      section
+    });
+
+    const cached = getFromCache<{
+      items: ReturnType<typeof mapBookListItem>[];
+      page: number;
+      pageSize: number;
+      totalItems: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+      appliedFilters: {
+        authors: string[];
+        statuses: string[];
+        difficulties: string[];
+        sortBy: CatalogSort['sortBy'];
+      };
+    }>(cacheKey);
+
+    if (cached) {
+      return cached;
     }
 
     const { items, total } = await this.bookRepo.findCatalog(
@@ -58,7 +94,7 @@ export class BookService {
       section
     );
 
-    return {
+    const result = {
       items: items.map(mapBookListItem),
       ...buildPaginationMeta(page, pageSize, total),
       appliedFilters: {
@@ -68,6 +104,11 @@ export class BookService {
         sortBy: sort.sortBy
       }
     };
+
+    // Cache catalog responses for 60 seconds
+    setInCache(cacheKey, result, 60);
+
+    return result;
   }
 
   /**
@@ -155,6 +196,8 @@ export class BookService {
   }) {
     const created = await this.bookRepo.create(input as any);
     const mapped = mapBook(created);
+    // Clear catalog-related caches since data changed
+    clearCache();
     return mapped!;
   }
 
@@ -169,5 +212,7 @@ export class BookService {
         'Book with given id not found'
       );
     }
+    // Clear catalog-related caches since data changed
+    clearCache();
   }
 }

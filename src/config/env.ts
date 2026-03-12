@@ -48,6 +48,29 @@ const parseNumber = (value: string | undefined, fallback: number): number => {
   return Number.isFinite(num) ? num : fallback;
 };
 
+const parseCorsOrigin = (
+  raw: string | undefined
+): string | RegExp | (string | RegExp)[] => {
+  if (!raw) {
+    return '*';
+  }
+
+  const parts = raw
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length === 0) {
+    return '*';
+  }
+
+  if (parts.length === 1) {
+    return parts[0];
+  }
+
+  return parts;
+};
+
 export const env: EnvConfig = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: parseNumber(process.env.PORT, 3000),
@@ -55,7 +78,7 @@ export const env: EnvConfig = {
   logLevel: process.env.LOG_LEVEL || 'info',
   rateLimitWindowMs: parseNumber(process.env.RATE_LIMIT_WINDOW_MS, 60_000),
   rateLimitMax: parseNumber(process.env.RATE_LIMIT_MAX, 20),
-  corsOrigin: process.env.CORS_ORIGIN || '*',
+  corsOrigin: parseCorsOrigin(process.env.CORS_ORIGIN),
   notifyWebhookUrl: process.env.NOTIFY_WEBHOOK_URL,
   notifyWebhookSecret: process.env.NOTIFY_WEBHOOK_SECRET,
   r2Endpoint: process.env.R2_ENDPOINT || '',
